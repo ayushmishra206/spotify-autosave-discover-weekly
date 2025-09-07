@@ -417,19 +417,33 @@ def main():
     
     try:
         saver = DiscoverWeeklySaver(client_id, client_secret, redirect_uri)
-        
+
         # Save Discover Weekly using configured preference
-        result = saver.save_discover_weekly(create_weekly_playlist=create_weekly)
-        
+        result = None
+        try:
+            result = saver.save_discover_weekly(create_weekly_playlist=create_weekly)
+        except Exception as e:
+            # Detect if the error is related to browser opening (e.g., gio: Operation not supported)
+            msg = str(e)
+            if 'gio:' in msg and 'Operation not supported' in msg:
+                print("❌ Could not open the Spotify authorization URL automatically.")
+                print("👉 Please copy and open the following URL in your browser to authorize:")
+                # Try to extract the URL from the error message
+                import re
+                url_match = re.search(r'(https://accounts\.spotify\.com/authorize[^\s]+)', msg)
+                if url_match:
+                    print(url_match.group(1))
+                else:
+                    print("(URL not found in error message. Please check your terminal output for the correct link.)")
+                print("After authorizing, return here and continue.")
+            else:
+                print(f"❌ Error: {e}")
+                print("💡 Check your Spotify app credentials and network connection")
         if result is not None:
             print("🎉 Complete! Discover Weekly saved and added to collection!")
         else:
             print("❌ Failed to save Discover Weekly")
             print("💡 Make sure Discover Weekly is in your library (follow it on Spotify)")
-        
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        print("💡 Check your Spotify app credentials and network connection")
 
 if __name__ == "__main__":
     main()

@@ -96,12 +96,38 @@ SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8080/callback"
 
 ## 🤖 Automation
 
-Perfect for weekly automation! Add to crontab:
+
+### Recommended: Use Anacron (for laptops/desktops that may be off at the scheduled time)
+
+This project supports robust weekly automation using **anacron**, which ensures your Discover Weekly backup runs even if your system was off at the scheduled time. To set up:
+
+1. Install anacron (if not already installed):
+	```bash
+	sudo apt-get update && sudo apt-get install -y anacron
+	```
+2. Create a script to run the backup (example):
+	```bash
+	mkdir -p ~/.anacron/scripts
+	echo '#!/bin/bash\ncd /home/<username>/spotify-autosave-discover-weekly\n/home/<username>/spotify-autosave-discover-weekly/spotify-env/bin/python /home/<username>/spotify-autosave-discover-weekly/discover_weekly_saver.py >> /home/<username>/spotify-autosave-discover-weekly/cron.log 2>&1' > ~/.anacron/scripts/discover_weekly_saver.sh
+	chmod +x ~/.anacron/scripts/discover_weekly_saver.sh
+	```
+3. Add this line to your `~/.anacron/anacrontab` (create the file if it doesn't exist):
+	```
+	7\t0\tdiscover_weekly_saver\t/home/<username>/.anacron/scripts/discover_weekly_saver.sh
+	```
+	This will run the script once every 7 days, as soon as your system is on.
+
+### Alternative: Use Cron (for always-on servers)
+
+If your system is always running, you can use cron instead:
 
 ```bash
-# Run every Monday at 9 AM
-0 9 * * 1 cd /path/to/spotify-backup && source spotify-env/bin/activate && python discover_weekly_saver.py
+# Run every Monday at 12 PM
+0 12 * * 1 cd /home/<username>/spotify-autosave-discover-weekly && /home/<username>/spotify-autosave-discover-weekly/spotify-env/bin/python /home/<username>/spotify-autosave-discover-weekly/discover_weekly_saver.py >> /home/<username>/spotify-autosave-discover-weekly/cron.log 2>&1
 ```
+Add this line to your crontab with `crontab -e`.
+
+**Note:** If you use anacron, you do not need to set up cron for this task.
 
 ## 📁 File Structure
 
